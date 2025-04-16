@@ -524,7 +524,12 @@ class BaseTrainer:
             if isinstance(batch, dict):
                 # 如果batch是字典，每个键对应一个张量
                 inputs = {k: v.to(self.device) for k, v in batch.items() if k != 'targets'}
-                targets = batch['targets'].to(self.device)
+                #targets = batch['targets'].to(self.device)
+                handlers = {
+                'tensor': lambda x: x.to(self.device),
+                'dict': lambda x: {k: v.to(self.device) if torch.is_tensor(v) else v for k, v in x.items()}
+                }
+                targets = handlers[type(batch['targets']).__name__](batch['targets'])
             elif isinstance(batch, (list, tuple)) and len(batch) == 2:
                 # 如果batch是元组或列表，假设是(inputs, targets)
                 inputs = batch[0].to(self.device)
@@ -833,7 +838,12 @@ class BaseTrainer:
                 if isinstance(batch, dict):
                     # 如果batch是字典，每个键对应一个张量
                     inputs = {k: v.to(self.device) for k, v in batch.items() if k != 'targets'}
-                    targets = batch['targets'].to(self.device)
+                    #targets = batch['targets'].to(self.device)
+                    handlers = {
+                    'tensor': lambda x: x.to(self.device),
+                    'dict': lambda x: {k: v.to(self.device) if torch.is_tensor(v) else v for k, v in x.items()}
+                    }
+                    targets = handlers[type(batch['targets']).__name__](batch['targets'])
                 elif isinstance(batch, (list, tuple)) and len(batch) == 2:
                     # 如果batch是元组或列表，假设是(inputs, targets)
                     inputs = batch[0].to(self.device)

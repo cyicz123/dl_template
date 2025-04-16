@@ -1,0 +1,14 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 问题讨论
+    url: https://github.com/cyicz123/dl_template/discussions/categories/q-a
+    about: 如果您有关于使用框架的问题，请在讨论区提出而不是创建issue
+  - name: 项目文档
+    url: https://github.com/cyicz123/dl_template/tree/main/docs
+    about: 查看项目文档了解更多信息
+  - name: 贡献指南
+    url: https://github.com/cyicz123/dl_template/blob/main/docs/github-team-workflow.md
+    about: 请先阅读贡献指南
+  - name: 搭建环境问题
+    url: https://github.com/cyicz123/dl_template/discussions/categories/q-a
+    about: 如果您在环境搭建方面遇到问题，请查看Wiki或在讨论区提问 

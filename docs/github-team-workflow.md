@@ -1,19 +1,18 @@
-# Git 基本操作指南
+# 如何贡献代码
 
 ## 目录
 - [简介](#简介)
 - [前置准备](#前置准备)
+- [贡献流程](#贡献流程)
 - [分支管理策略](#分支管理策略)
-- [工作流程](#工作流程)
 - [代码提交规范](#代码提交规范)
 - [Code Review流程](#code-review流程)
 - [冲突解决](#冲突解决)
-- [版本发布流程](#版本发布流程)
 - [常见问题与解决方案](#常见问题与解决方案)
 
 ## 简介
 
-本文档旨在规范团队成员在使用Git和Github进行协作开发时的工作流程，帮助团队提高协作效率，减少冲突，确保代码质量。无论你是Git初学者还是有经验的开发者，都可以按照本文档的指引参与项目开发。
+本文档旨在指导贡献者如何正确地为本仓库贡献代码。遵循本指南可以帮助我们更高效地协作，减少冲突，确保代码质量。无论你是Git初学者还是有经验的开发者，都应按照本文档的指引参与项目开发。
 
 ## 前置准备
 
@@ -44,142 +43,162 @@ git config --global user.email "你的邮箱@example.com"
 
 访问 [Github官网](https://github.com/) 注册账号。
 
-### 4. 加入项目
+### 4. Fork本仓库
 
-1. 项目管理员会将你添加到项目的协作者名单中
-2. 你会收到邀请邮件，点击接受邀请
+1. 访问本项目的GitHub页面
+2. 点击右上角的"Fork"按钮，创建一个自己的仓库副本
 
-### 5. 克隆项目
+### 5. 克隆仓库
 
 ```bash
-git clone https://github.com/组织名/项目名.git
+git clone https://github.com/你的用户名/项目名.git
 cd 项目名
 ```
 
-## 分支管理策略
+### 6. 设置upstream
 
-我们采用基于功能分支(Feature Branch)的Git工作流，主要分支如下：
+```bash
+git remote add upstream https://github.com/原始组织名/项目名.git
+```
 
-### 主要分支
+## 贡献流程
 
-- **main**: 主分支，保存正式发布的历史
-- **feature/xxx**: 功能分支，用于开发新功能
-- **bugfix/xxx**: 修复bug的分支
-- **release/x.x.x**: 版本发布分支
-- **hotfix/xxx**: 紧急修复生产环境问题的分支
+### 1. 创建Issue
 
-### 最小化原则
+**在开始任何代码更改前，必须先创建一个Issue**：
 
-我们遵循**最小化原则**进行开发：
+1. 访问项目的Issues页面
+2. 点击"New issue"按钮
+3. 选择适当的Issue模板（如果有）
+4. 填写Issue标题和描述，清晰说明你要解决的问题或实现的功能
+5. 标记相关标签(Labels)
+6. 提交Issue等待管理员确认
 
-- 每个分支只做**一件事**，即一个明确的功能点或修复一个具体的bug
-- 避免在一个分支中混合多种不相关的修改
-- 分支内容应该尽可能小，便于审查和测试
-- 如果一个功能较大，应拆分为多个小功能点，分别创建分支开发
+### 2. 获取最新代码
 
-通过遵循最小化原则，可以：
-- 减少代码冲突的可能性
-- 简化代码审查过程
-- 提高问题定位的效率
-- 保持提交历史的清晰
-
-### 分支命名规范
-
-- 功能分支: `feature/简短描述`（例如：`feature/user-login`）
-- Bug修复分支: `bugfix/问题描述-问题编号`（例如：`bugfix/login-error-123`）
-- 热修复分支: `hotfix/问题描述`（例如：`hotfix/critical-security-issue`）
-- 发布分支: `release/版本号`（例如：`release/1.2.0`）
-
-## 工作流程
-
-### 1. 获取最新代码
-
-在开始新工作前，确保你的本地仓库是最新的：
+在开始工作前，确保你的本地仓库是最新的：
 
 ```bash
 git checkout main
-git pull origin main
+git pull upstream main
 ```
 
-### 2. 创建功能分支
+### 3. 创建功能分支
 
-根据你要开发的功能，创建并切换到新的功能分支：
+根据你的Issue编号和要开发的功能，创建并切换到新的功能分支：
 
 ```bash
-git checkout -b feature/你的功能名称 main
+git checkout -b feature/issue-123-功能描述 main
 ```
 
-### 3. 进行开发工作
+### 4. 进行开发工作
 
 在你的功能分支上进行开发，并定期提交代码：
 
 ```bash
 # 修改代码后...
 git add .
-git commit -m "feat: 添加了xxx功能"
+git commit -m "feat: 添加了xxx功能 #123"
 ```
 
-### 4. 保持分支同步
+注意：在提交信息中引用Issue编号（如`#123`），这样GitHub会自动关联提交与Issue。
 
-定期从main分支获取最新代码，并通过rebase保持分支历史线性：
+### 5. 保持分支同步
+
+定期从upstream仓库的main分支获取最新代码，并通过rebase保持分支历史线性：
 
 ```bash
 git checkout main
-git pull origin main
-git checkout feature/你的功能名称
+git pull upstream main
+git checkout feature/issue-123-功能描述
 git rebase main
 ```
 
 如果出现冲突，请参考[冲突解决](#冲突解决)部分。
 
-### 5. 推送分支到远程
+### 6. 推送分支到远程
 
-当功能开发完成后，将你的分支推送到远程仓库：
+当功能开发完成后，将你的分支推送到你的Fork仓库：
 
 ```bash
-git push origin feature/你的功能名称
+git push origin feature/issue-123-功能描述
 ```
 
 如果你之前已经推送过分支并且使用了rebase，你需要强制推送：
 
 ```bash
-git push origin feature/你的功能名称 --force
+git push origin feature/issue-123-功能描述 --force
 ```
 
-注意：使用`--force`时要确保没有其他人在同一分支上工作。
+注意：使用`--force`时要谨慎，确保没有其他人在同一分支上工作。
 
-### 6. 创建Pull Request
+### 7. 创建Pull Request
 
-1. 在Github仓库页面点击"Pull requests"标签
-2. 点击"New pull request"按钮
-3. 设置从你的功能分支合并到main分支
-4. 填写PR标题和描述，说明你的变更内容
-5. 点击"Create pull request"
+1. 访问你Fork的仓库页面
+2. 点击"Pull requests"标签
+3. 点击"New pull request"按钮
+4. 选择base分支为原始仓库的main分支，compare分支为你的功能分支
+5. 填写PR标题和描述，说明你的变更内容
+6. 在描述中使用关键词关联Issue，如"Closes #123"或"Fixes #123"
+7. 点击"Create pull request"
 
-### 7. Code Review
+PR描述应包含：
+- 变更内容概述
+- 关联的Issue编号
+- 测试方法或结果
+- 其他需要审阅者注意的事项
 
-等待团队成员进行代码审查。如有修改意见，请在你的分支上继续提交修改，PR会自动更新。
+### 8. Code Review
 
-### 8. 合并到main分支
+等待项目维护者进行代码审查。如有修改意见，请在你的分支上继续提交修改，PR会自动更新。
 
-当PR获得批准后，推荐使用"Rebase and merge"方式合并到main分支：
+### 9. PR被合并
 
-1. 在PR页面点击"Merge pull request"
-2. 选择合并方式（推荐使用"Rebase and merge"以保持历史线性）
-3. 点击确认按钮完成合并
-
-### 9. 删除功能分支
-
-PR合并后，你可以删除功能分支：
+当PR获得批准并被合并后，你可以：
 
 ```bash
-# 删除本地分支
+# 切换回main分支
 git checkout main
-git branch -d feature/你的功能名称
 
-# 删除远程分支
-git push origin --delete feature/你的功能名称
+# 更新本地main
+git pull upstream main
+
+# 删除本地功能分支
+git branch -d feature/issue-123-功能描述
+
+# 更新你的fork仓库
+git push origin main
+
+# 删除远程功能分支
+git push origin --delete feature/issue-123-功能描述
 ```
+
+## 分支管理策略
+
+我们采用基于功能分支(Feature Branch)的Git工作流：
+
+### 主要分支类型
+
+- **main**: 主分支，保存正式发布的历史
+- **feature/issue-xxx-描述**: 功能分支，用于开发新功能
+- **bugfix/issue-xxx-描述**: 修复bug的分支
+- **docs/issue-xxx-描述**: 文档相关的修改
+- **hotfix/issue-xxx-描述**: 紧急修复生产环境问题的分支
+
+### 最小化原则
+
+我们遵循**最小化原则**进行开发：
+
+- 每个分支只做**一件事**，即解决一个具体的Issue
+- 避免在一个分支中混合多种不相关的修改
+- 分支内容应该尽可能小，便于审查和测试
+- 如果一个功能较大，应在Issues中拆分为多个小功能点，分别创建分支开发
+
+通过遵循最小化原则，可以：
+- 减少代码冲突的可能性
+- 简化代码审查过程
+- 提高问题定位的效率
+- 保持提交历史的清晰
 
 ## 代码提交规范
 
@@ -188,7 +207,7 @@ git push origin --delete feature/你的功能名称
 ### 提交信息格式
 
 ```
-<类型>[可选的作用域]: <描述>
+<类型>[可选的作用域]: <描述> #Issue编号
 
 [可选的正文]
 
@@ -209,7 +228,7 @@ git push origin --delete feature/你的功能名称
 ### 示例
 
 ```
-feat(user): 添加用户登录功能
+feat(user): 添加用户登录功能 #123
 
 实现了基于JWT的认证系统和用户登录表单。
 
@@ -220,9 +239,9 @@ Closes #123
 
 ### 提交PR后
 
-1. 在Github上为PR指定至少一名Reviewer
-2. 通知相关人员进行Review
-3. 等待反馈
+1. 在PR中@提及相关人员或等待维护者指派Reviewer
+2. 等待反馈
+3. CI/CD检查需要通过
 
 ### Reviewer职责
 
@@ -242,7 +261,7 @@ Closes #123
 
 当满足以下条件时，PR可以被合并：
 
-1. 至少一名Reviewer批准
+1. 至少一名项目维护者批准
 2. 所有讨论都已解决
 3. CI/CD检查通过
 4. 代码符合项目质量标准
@@ -255,8 +274,8 @@ Closes #123
 
 ```bash
 git checkout main
-git pull origin main
-git checkout feature/你的功能名称
+git pull upstream main
+git checkout feature/issue-123-功能描述
 git rebase main
 ```
 
@@ -269,7 +288,7 @@ git rebase main
    main分支上的代码
    =======
    你的代码
-   >>>>>>> feature/你的功能名称 (传入的更改)
+   >>>>>>> feature/issue-123-功能描述 (传入的更改)
    ```
 
 3. 编辑文件解决冲突，删除冲突标记
@@ -285,46 +304,10 @@ git rebase main
 
 7. 完成后推送到远程
    ```bash
-   git push origin feature/你的功能名称 --force
+   git push origin feature/issue-123-功能描述 --force
    ```
    
    注意：使用`--force`要谨慎，只在你确定没有其他人在同一分支工作时使用。
-
-## 版本发布流程
-
-### 1. 创建发布分支
-
-当main分支达到稳定状态且准备发布时，创建release分支：
-
-```bash
-git checkout main
-git pull origin main
-git checkout -b release/x.x.x
-```
-
-### 2. 发布准备
-
-在release分支上：
-- 更新版本号
-- 更新CHANGELOG.md
-- 进行最后的测试和修复
-
-### 3. 完成发布
-
-测试通过后，将release分支合并回main：
-
-```bash
-# 合并到main
-git checkout main
-git pull origin main
-git merge --no-ff release/x.x.x
-git tag -a vx.x.x -m "发布版本x.x.x"
-git push origin main --tags
-
-# 清理
-git branch -d release/x.x.x
-git push origin --delete release/x.x.x
-```
 
 ## 常见问题与解决方案
 
@@ -487,4 +470,6 @@ feat: 实现完整的用户登录功能
 
 ## 总结
 
-遵循本文档中的工作流程和规范，尤其是最小化原则和线性历史通过rebase实现，可以帮助团队成员高效协作，减少冲突，保持代码库的整洁和可维护性。如果你对工作流程有任何疑问或建议，请与团队负责人联系。 
+遵循本文档中的贡献流程和规范，特别是"先提Issue，再提PR"的原则，可以帮助我们高效协作，减少冲突，保持代码库的整洁和可维护性。如果你对贡献流程有任何疑问或建议，请在Issues中提出。
+
+感谢你对本项目的贡献！ 

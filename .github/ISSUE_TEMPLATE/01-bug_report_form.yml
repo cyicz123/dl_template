@@ -1,0 +1,184 @@
+name: 问题报告表单
+description: 使用结构化表单报告bug
+title: "[BUG] "
+labels: ["bug", "待分类"]
+assignees:
+  - 
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您抽出时间填写此问题报告！请尽可能详细地填写以下信息，这将帮助我们更快地解决问题。
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 发生了什么
+      description: 请描述您遇到的问题，以及您期望发生的事情
+      placeholder: 详细描述遇到的问题...
+      value: "我遇到了一个问题..."
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce-steps
+    attributes:
+      label: 复现步骤
+      description: 请提供详细的复现步骤
+      placeholder: |
+        1. 运行命令 '...'
+        2. 使用配置文件 '....'
+        3. 训练过程中出现 '....'
+        4. 发现错误
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: 问题组件
+      description: 问题出现在哪个组件？
+      options:
+        - 模型定义 (models)
+        - 数据集加载 (datasets)
+        - 损失函数 (losses)
+        - 训练器 (trainers)
+        - 可视化工具 (visualization)
+        - 工具函数 (utils)
+        - 配置系统 (configs)
+        - 命令行工具 (tools)
+        - 其他
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: 模型
+      description: 您使用的是哪个模型？
+      placeholder: 例如：CNN, ResNet等
+  - type: input
+    id: dataset
+    attributes:
+      label: 数据集
+      description: 您使用的是哪个数据集？
+      placeholder: 例如：CIFAR-10, 自定义数据集等
+  - type: input
+    id: batch_size
+    attributes:
+      label: Batch Size
+      description: 您设置的batch size是多少？
+      placeholder: 例如：32, 64, 128等
+  - type: dropdown
+    id: os
+    attributes:
+      label: 操作系统
+      description: 您使用的是什么操作系统？
+      options:
+        - Windows
+        - macOS
+        - Ubuntu
+        - CentOS
+        - 其他Linux
+        - 其他
+    validations:
+      required: true
+  - type: input
+    id: python_version
+    attributes:
+      label: Python版本
+      description: 您使用的Python版本
+      placeholder: 例如：3.8.10
+    validations:
+      required: true
+  - type: input
+    id: torch_version
+    attributes:
+      label: PyTorch版本
+      description: 您使用的PyTorch版本
+      placeholder: 例如：1.10.0
+    validations:
+      required: true
+  - type: dropdown
+    id: cuda
+    attributes:
+      label: CUDA版本
+      description: 您使用的CUDA版本
+      options:
+        - 不使用CUDA (CPU)
+        - CUDA 10.2
+        - CUDA 11.0
+        - CUDA 11.1
+        - CUDA 11.3
+        - CUDA 11.6
+        - CUDA 11.7
+        - CUDA 11.8
+        - CUDA 12.0
+        - CUDA 12.1
+        - CUDA 12.2
+        - 其他
+    validations:
+      required: true
+  - type: dropdown
+    id: gpu
+    attributes:
+      label: GPU型号
+      description: 您使用的GPU型号
+      options:
+        - 不使用GPU
+        - NVIDIA RTX 4090
+        - NVIDIA RTX 4080
+        - NVIDIA RTX 3090
+        - NVIDIA RTX 3080
+        - NVIDIA RTX 3070
+        - NVIDIA RTX 3060
+        - NVIDIA RTX 2080 Ti
+        - NVIDIA RTX 2080
+        - NVIDIA GTX 1080 Ti
+        - NVIDIA A100
+        - NVIDIA V100
+        - NVIDIA T4
+        - AMD Radeon
+        - 其他
+      multiple: true
+  - type: textarea
+    id: command
+    attributes:
+      label: 执行命令
+      description: 您执行的命令
+      placeholder: 例如：python tools/train.py --config configs/training/default.yaml
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: config
+    attributes:
+      label: 配置文件内容
+      description: 如果适用，请提供您使用的配置文件内容
+      render: yaml
+  - type: textarea
+    id: logs
+    attributes:
+      label: 错误日志输出
+      description: 请复制粘贴相关的错误日志。这将自动格式化为代码，无需使用反引号。
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 截图
+      description: 如果有，请添加截图以帮助解释您的问题
+  - type: textarea
+    id: additional
+    attributes:
+      label: 附加信息
+      description: 任何其他可能相关的信息
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: 确认
+      description: 在提交此问题前，请确认以下事项
+      options:
+        - label: 我已经搜索了现有问题，确认这不是重复报告
+          required: true
+        - label: 我已经检查过文档，确认这不是使用错误
+          required: true
+        - label: 我已经提供了尽可能多的相关信息
+          required: true 

@@ -27,7 +27,7 @@ DL-Template是一个用于深度学习实验和研究的轻量级PyTorch训练�
 📊 **可视化支持** - 内置TensorBoard支持，提供丰富的可视化功能  
 📈 **监控工具** - 梯度流、特征图等深度监控工具  
 💾 **检查点管理** - 自动保存检查点和恢复训练  
-<!-- ⏱️ **训练优化** - 支持早停和多种学习率调度策略   -->
+⏱️ **训练优化** - 支持早停和多种学习率调度策略  
 
 ## 目录结构
 
@@ -155,6 +155,10 @@ python tools/train.py --config configs/training/default.yaml --device cuda:0
 - [TensorBoard可视化](docs/tensorboard_visualization.md) - 如何使用TensorBoard进行可视化
 - [钩子系统使用指南](docs/hooks_usage.md) - 如何使用钩子系统扩展训练功能
 - [团队协作Git使用指南](docs/github-team-workflow.md) - 如何使用Git和Github进行标准化开发
+
+## 贡献
+
+欢迎贡献代码和提出建议！请参考[贡献指南](docs/github-team-workflow.md)。
 
 ## 许可证
 

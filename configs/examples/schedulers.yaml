@@ -1,0 +1,116 @@
+# 学习率调度器配置示例文件
+
+# 基本训练配置
+training:
+  epochs: 100
+  optimizer:
+    type: adam
+    lr: 0.001
+    weight_decay: 0.0001
+  
+  # 步长衰减调度器 (StepLR) - 每10个epoch将学习率乘以0.1
+  scheduler:
+    type: StepLR
+    step_size: 10
+    gamma: 0.1
+    step_frequency: epoch  # 可选 'epoch' 或 'step'
+
+# 余弦退火学习率调度器 (CosineAnnealingLR) 配置示例
+cosine_scheduler:
+  type: CosineAnnealingLR
+  T_max: 100  # 周期长度，通常设置为训练的总epoch数
+  eta_min: 0.00001  # 最小学习率
+  step_frequency: epoch
+
+# 基于验证指标的学习率调度器 (ReduceLROnPlateau) 配置示例
+plateau_scheduler:
+  type: ReduceLROnPlateau
+  mode: min  # 监控指标的模式，'min'表示指标越小越好
+  factor: 0.1  # 学习率衰减因子
+  patience: 5  # 容忍几个epoch验证集指标没有改善
+  threshold: 0.0001  # 改善阈值
+  step_frequency: epoch  # 必须为'epoch'
+  step_metric: loss  # 监控的指标名称，默认为'loss'
+
+# 余弦退火带重启的学习率调度器 (CosineAnnealingWarmRestarts) 配置示例
+warm_restarts_scheduler:
+  type: CosineAnnealingWarmRestarts
+  T_0: 10  # 第一次重启的epoch数
+  T_mult: 2  # 每次重启后，T_0变为原来的T_mult倍
+  eta_min: 0.00001  # 最小学习率
+  step_frequency: epoch
+
+# 多步长衰减调度器 (MultiStepLR) 配置示例
+multistep_scheduler:
+  type: MultiStepLR
+  milestones: [30, 60, 90]  # 在这些epoch处衰减学习率
+  gamma: 0.1  # 学习率衰减因子
+  step_frequency: epoch
+
+# 指数衰减调度器 (ExponentialLR) 配置示例
+exponential_scheduler:
+  type: ExponentialLR
+  gamma: 0.95  # 每个epoch学习率衰减为原来的gamma倍
+  step_frequency: epoch
+
+# 线性预热调度器 (LinearWarmup) 配置示例
+linear_warmup_scheduler:
+  type: LinearWarmup
+  warmup_epochs: 5  # 预热5个epoch
+  warmup_start_factor: 0.1  # 从初始学习率的10%开始预热
+  step_frequency: epoch  
+
+# 复合调度器 (CompositeLR) 配置示例 - 按顺序组合多个调度器
+composite_scheduler:
+  type: CompositeLR
+  step_frequency: epoch
+  phases:
+    # 第一阶段：线性预热
+    - scheduler_name: LinearWarmup
+      config:
+        warmup_epochs: 5
+        warmup_start_factor: 0.01  # 从初始学习率的1%开始
+      duration: 5  # 持续5个epoch
+    
+    # 第二阶段：恒定学习率
+    - scheduler_name: StepLR
+      config:
+        step_size: 100  # 设置一个很大的步长，相当于恒定学习率
+        gamma: 1.0
+      duration: 15  # 持续15个epoch
+    
+    # 第三阶段：余弦退火
+    - scheduler_name: CosineAnnealingLR
+      config:
+        T_max: 80  # 余弦退火周期
+        eta_min: 0.00001  # 最小学习率
+      duration: 80  # 持续80个epoch
+
+# 另一个复合调度器示例 - Warmup + 阶梯式衰减
+warmup_multistep_scheduler:
+  type: CompositeLR
+  step_frequency: epoch
+  phases:
+    # 预热阶段
+    - scheduler_name: LinearWarmup
+      config:
+        warmup_epochs: 5
+        warmup_start_factor: 0.1
+      duration: 5
+    
+    # 阶梯式衰减阶段
+    - scheduler_name: MultiStepLR
+      config:
+        milestones: [25, 55, 85]  # 相对于此阶段的开始，即全局epoch的30、60、90
+        gamma: 0.1
+      duration: 95
+
+# 使用以下方式之一来设置scheduler:
+# 1. 直接在training.scheduler中设置
+# 2. 复制所需的调度器配置到training.scheduler位置
+# 例如:
+# training:
+#   scheduler: ${cosine_scheduler}  # 使用余弦退火调度器
+# 或者:
+# training:
+#   scheduler: ${composite_scheduler}  # 使用复合调度器 

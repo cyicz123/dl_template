@@ -15,6 +15,7 @@ from ..visualization.base_visualizer import BaseVisualizer
 from ..hooks.base_hook import BaseHook
 from ..hooks.registry import HookRegistry
 from ..visualization.registry import VisualizerRegistry
+from ..schedulers import build_scheduler, BaseLRSchedulerWrapper
 
 class BaseTrainer:
     """基础训练器类"""
@@ -292,18 +293,28 @@ class BaseTrainer:
         else:
             raise ValueError(f"不支持的优化器类型: {optimizer_type}")
     
-    def _build_scheduler(self) -> Optional[torch.optim.lr_scheduler._LRScheduler]:
+    def _build_scheduler(self) -> Optional[Union[torch.optim.lr_scheduler._LRScheduler, BaseLRSchedulerWrapper]]:
         """构建学习率调度器
         
+        优先使用新的调度器包装器系统，如果没有找到对应的调度器类型，则回退到旧的方式以保证前向兼容性。
+        
         Returns:
-            学习率调度器
+            学习率调度器或包装器
         """
         scheduler_config = self.config.get('training', {}).get('scheduler', {})
         if not scheduler_config:
             return None
-            
-        scheduler_type = scheduler_config.get('type', '').lower()
         
+        # 尝试使用新的调度器系统创建调度器
+        new_scheduler = build_scheduler(scheduler_config, self.optimizer)
+        if new_scheduler is not None:
+            self.logger.info(f"使用新的调度器系统: {scheduler_config.get('type')}")
+            return new_scheduler
+            
+        # 如果新系统未创建成功（可能是因为使用了旧的配置格式），回退到旧方法以保持兼容性
+        self.logger.warning("尝试使用旧的调度器系统，以保持兼容性...")
+        
+        scheduler_type = scheduler_config.get('type', '').lower()
         if not scheduler_type:
             return None
             
@@ -462,10 +473,15 @@ class BaseTrainer:
             
             # 更新学习率调度器
             if self.scheduler is not None:
-                if isinstance(self.scheduler, optim.lr_scheduler.ReduceLROnPlateau):
-                    self.scheduler.step(val_metrics.get('loss', float('inf')))
+                if isinstance(self.scheduler, BaseLRSchedulerWrapper):
+                    # 新的调度器系统 - 使用包装器的统一接口
+                    self.scheduler.step(metrics=val_metrics, epoch=self.current_epoch)
                 else:
-                    self.scheduler.step()
+                    # 旧的调度器系统 - 保持原有逻辑以保证兼容性
+                    if isinstance(self.scheduler, optim.lr_scheduler.ReduceLROnPlateau):
+                        self.scheduler.step(val_metrics.get('loss', float('inf')))
+                    else:
+                        self.scheduler.step()
             
             # 记录指标
             self.logger.info(
@@ -556,12 +572,18 @@ class BaseTrainer:
             # 更新全局步数
             self.global_step += 1
             
+            # 如果使用的是基于步数的调度器，在每一步更新学习率
+            if self.scheduler is not None and isinstance(self.scheduler, BaseLRSchedulerWrapper) and self.scheduler.step_frequency == 'step':
+                self.scheduler.step(metrics=None, step=self.global_step)
+            
             # 累积损失
             total_loss += loss.item()
             
             # 使用可视化器记录每个batch的损失
             if self.visualizer is not None:
                 self.visualizer.add_scalar('train/batch_loss', loss.item(), self.global_step)
+                for i, group in enumerate(self.optimizer.param_groups):
+                    self.visualizer.add_scalar(f'lr/group_{i}', group['lr'], self.global_step)
             
             # 执行钩子的step后方法
             for hook in self.hooks:

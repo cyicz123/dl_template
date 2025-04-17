@@ -154,6 +154,7 @@ python tools/train.py --config configs/training/default.yaml --device cuda:0
 - [自定义损失函数教程](docs/losses.md) - 如何创建和注册自定义损失函数
 - [TensorBoard可视化](docs/tensorboard_visualization.md) - 如何使用TensorBoard进行可视化
 - [钩子系统使用指南](docs/hooks_usage.md) - 如何使用钩子系统扩展训练功能
+- [学习率调度器使用指南](docs/scheduler_usage.md) - 如何使用和自定义学习率调度策略
 - [团队协作Git使用指南](docs/github-team-workflow.md) - 如何使用Git和Github进行标准化开发
 
 ## 贡献

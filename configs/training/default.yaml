@@ -14,15 +14,28 @@ device: "cuda"
 training:
   epochs: 50
   optimizer:
-    type: "adam"
+    type: "adamw"
     lr: 0.001
     weight_decay: 1e-5
   scheduler:
-    type: "cosine"
-    T_max: 50
-    eta_min: 0.0001
+    type: CompositeLR
+    step_frequency: epoch
+    phases:
+      # 预热阶段
+      - scheduler_name: LinearWarmup
+        config:
+          warmup_epochs: 5
+          warmup_start_factor: 0.1
+        duration: 5
+      
+      # 阶梯式衰减阶段
+      - scheduler_name: MultiStepLR
+        config:
+          milestones: [25, 40]  # 相对于此阶段的开始，即全局epoch的30、45
+          gamma: 0.1
+        duration: 45
   early_stopping:
-    patience: 50
+    patience: 10
     min_delta: 0.001
     monitor: "loss"
     mode: "min"

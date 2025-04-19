@@ -1,0 +1,26 @@
+dataset:
+  type: "cat_dog"
+  data_dir: "data/cat_dog"
+  batch_size: 32
+  num_workers: 4
+  
+  # 原始数据集目录配置（在首次运行时使用）
+  original_dataset_dir: "data/cat_dog"
+  original_datatrain_dir: "data/cat_dog/train"
+  original_datatest_dir: "data/cat_dog/test1"
+  force_prepare: true  # 是否强制重新准备数据
+  
+  # 数据集分割配置
+  train_cat_count: 200
+  test_cat_count: 100
+  test_cat_start: 300
+  train_dog_count: 200
+  test_dog_count: 100
+  test_dog_start: 300
+  
+  # 数据变换配置
+  transforms:
+    resize: [224, 224]
+    normalize:
+      mean: [0.485, 0.456, 0.406]  # ImageNet预训练模型的标准化参数
+      std: [0.229, 0.224, 0.225]

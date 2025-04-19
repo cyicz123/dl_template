@@ -1,0 +1,12 @@
+model:
+  type: "vgg16"
+  in_channels: 3
+  num_classes: 2  # 猫狗二分类
+  use_pretrained: true  # 使用预训练权重
+  feature_extract: false  # 全网络微调
+  
+  # 损失函数配置
+  loss:
+    type: "cross_entropy"  # 使用交叉熵损失
+    weight: null  # 不使用类别权重平衡
+    label_smoothing: 0.1  # 标签平滑，减少过拟合

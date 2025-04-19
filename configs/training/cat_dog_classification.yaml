@@ -1,0 +1,43 @@
+# 猫狗分类训练配置
+experiment_name: "cat_dog_vgg16"  # 实验名称
+model_config: "configs/models/vgg16_cat_dog.yaml"  # 模型配置
+dataset_config: "configs/datasets/cat_dog.yaml"  # 数据集配置
+
+# 系统配置
+seed: 42
+device: "cuda"
+
+# 训练参数
+train:
+  num_epochs: 20  # 训练轮数
+  optimizer:
+    type: "sgd"  # 优化器类型
+    lr: 0.0001  # 学习率
+    # weight_decay: 0.0001  # 权重衰减
+  
+  # scheduler:  # 学习率调度器
+  #   type: "ReduceLROnPlateau"
+  #   mode: "min"
+  #   factor: 0.1
+  #   patience: 3
+  #   min_lr: 0.00001
+  
+  # 早停配置
+  # early_stopping:
+  #   enabled: true
+  #   patience: 5
+  #   min_delta: 0.001
+  
+  # 梯度裁剪配置
+  grad_clip:
+    enabled: true
+    max_norm: 1.0
+
+# 评估参数
+evaluation:
+  # 验证频率（每N个epoch验证一次）
+  validation_frequency: 1
+  # 指标
+  metrics: ["accuracy", "precision", "recall", "f1"]
+
+

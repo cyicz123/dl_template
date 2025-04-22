@@ -23,10 +23,10 @@ train:
   #   min_lr: 0.00001
   
   # 早停配置
-  # early_stopping:
-  #   enabled: true
-  #   patience: 5
-  #   min_delta: 0.001
+  early_stopping:
+    enabled: true
+    patience: 5
+    min_delta: 0.001
   
   # 梯度裁剪配置
   grad_clip:

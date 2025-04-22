@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from typing import Dict, Any, Tuple, Union, List, Optional
 
-from torchvision import models
+from torchvision.models import vgg16, VGG16_Weights
 from .base_model import BaseModel
 from .registry import ModelRegistry
 from ..utils import get_logger
@@ -11,20 +11,35 @@ from ..utils import get_logger
 @ModelRegistry.register('vgg16')
 class VGG16(BaseModel):
     """VGG16模型用于猫狗二分类任务"""
-    
-    model = models.vgg16(pretrained=True)
-    # 我们主要是想调用vgg16的卷积层，全连接层自己定义，覆盖掉原来的
-    # 如果想只训练模型的全连接层（不想则注释掉这个for）
-    for param in model.parameters():
-        param.requires_grad = False
-    # 构建新的全连接层
-    # 25088：卷阶层输入的是25088个神经元，中间100是自己定义的，输出类别数量2
-    model.classifier = torch.nn.Sequential(torch.nn.Linear(25088, 100),
-                                        torch.nn.ReLU(),
-                                        torch.nn.Dropout(p=0.5),
-                                        torch.nn.Linear(100, 2)
-                                        # 这里可以加softmax也可以不加
-                                        )
+    def __init__(self, config: Dict[str, Any]):
+        super().__init__(config)
+        
+        # 从配置获取参数
+        self.num_classes = config.get('num_classes', 2)
+        self.use_pretrained = config.get('use_pretrained', True)
+        self.feature_extract = config.get('feature_extract', True)  # 默认只训练分类器
+        # 然后在__init__方法中替换现有的模型创建代码
+        if self.use_pretrained:
+            weights = VGG16_Weights.IMAGENET1K_V1  # 或使用 VGG16_Weights.DEFAULT
+        else:
+            weights = None
+        self.model = vgg16(weights=weights)
+        # 如果只训练分类器部分，冻结特征提取器
+        if self.feature_extract:
+            for param in self.model.parameters():
+                param.requires_grad = False
+        
+        # 构建新的全连接层
+        self.model.classifier = nn.Sequential(
+            nn.Linear(25088, 100),
+            nn.ReLU(),
+            nn.Dropout(p=0.5),
+            nn.Linear(100, self.num_classes)
+        )
+        
+        # 将特征提取器和分类器分开保存
+        self.features = self.model.features
+        self.classifier = self.model.classifier
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """前向传播
@@ -56,9 +71,6 @@ class VGG16(BaseModel):
         Returns:
             损失值
         """
-        if self.loss is not None:
-            return self.loss(outputs, targets)
-        
         # 对于二分类任务，使用交叉熵损失
         return F.cross_entropy(outputs, targets)
     

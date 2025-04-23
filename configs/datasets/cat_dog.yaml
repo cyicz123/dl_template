@@ -8,7 +8,7 @@ dataset:
   original_dataset_dir: "data/cat_dog"
   original_datatrain_dir: "data/cat_dog/train"
   original_datatest_dir: "data/cat_dog/test1"
-  force_prepare: true  # 是否强制重新准备数据
+  force_prepare: false # 是否强制重新准备数据
   
   # 数据集分割配置
   train_cat_count: 200

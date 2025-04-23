@@ -1,0 +1,30 @@
+# 猫狗分类训练配置
+experiment_name: "cat_dog_densenet" # 实验名称
+model_config: "configs/models/densenet.yaml" # 模型配置
+dataset_config: "configs/datasets/cat_dog.yaml"  # 数据集配置
+
+
+# 训练设置
+training:
+  epochs: 100
+  # early_stopping:
+  #   patience: 15  # 如果连续15个epoch没有改善，则停止训练
+  #   monitor: "val_loss"
+  save_best: true
+  save_interval: 5  # 每5个epoch保存一次
+  optimizer:
+    type: "adam"
+    lr: 0.00001
+    weight_decay: 0.0005  # L2正则化
+  checkpoint:
+    save_frequency: 5  # 每5个epoch保存一次权重
+  # scheduler:
+  #   type: "ReduceLROnPlateau"
+  #   mode: "min"         # 监控val_loss
+  #   factor: 0.5        # 学习率降低的因子
+  #   patience: 5        # 在降低学习率之前等待的epoch数
+  #   min_lr: 0.00001    # 最小学习率
+# 可视化设置
+visualizer:
+  type: "tensorboard"
+  log_interval: 10

@@ -1,0 +1,19 @@
+model:
+  type: "densenet"
+  
+  # 基本参数
+  in_channels: 3           # 彩色图像的通道数
+  num_classes: 2           # 二分类问题
+  
+  # 针对小数据集的DenseNet参数
+  growth_rate: 12          # 减小growth_rate以降低模型复杂度
+  block_config: [4, 8, 8]  # 减少层数和块数，使用3个block而不是4个
+  num_init_features: 32    # 减少初始特征通道数
+  bn_size: 4               # 保持bottleneck结构
+  drop_rate: 0.3           # 增加dropout率以防止过拟合
+  compression: 0.6         # 增加压缩因子
+  
+  # 损失函数设置
+  loss:
+    type: "cross_entropy"
+    

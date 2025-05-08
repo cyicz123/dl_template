@@ -1,0 +1,51 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Deep Learning Model System
+
+## Core Components
+
+The model system is one of the core components of the framework, allowing flexible creation and registration of custom deep learning models.
+
+- [base_model.py](mdc:dl_framework/models/base_model.py) defines the base class `BaseModel` for all models, inheriting from PyTorch's `nn.Module`.
+- [registry.py](mdc:dl_framework/models/registry.py) implements the `ModelRegistry` class for registering and retrieving model classes.
+- [cnn.py](mdc:dl_framework/models/cnn.py) contains the built-in CNN model implementation.
+- [models/__init__.py](mdc:dl_framework/models/__init__.py) exports the main model components.
+
+## Model Registration System
+
+The model registration system is implemented through the `ModelRegistry` class, which allows custom model classes to be registered to the framework so they can be easily called via configuration files. Usage is as follows:
+
+```python
+@ModelRegistry.register('custom_model_name')
+class CustomModel(BaseModel):
+    def __init__(self, config):
+        super().__init__(config)
+        # Model definition...
+    
+    def forward(self, x):
+        # Forward pass implementation...
+        return output
+        
+    def get_loss(self, outputs, targets):
+        # Loss calculation implementation...
+        return loss
+```
+
+## Configuration File Usage
+
+Model configuration files can be found in the [configs/](mdc:configs) directory, typically following this format:
+
+```yaml
+model:
+  type: "registered_model_name"  # Registered model name
+  # Model-specific parameters
+  param1: value1
+  param2: value2
+```
+
+## Detailed Documentation
+
+Detailed documentation of the model system and custom model guidelines can be found in [docs/custom_model.md](mdc:docs/custom_model.md).

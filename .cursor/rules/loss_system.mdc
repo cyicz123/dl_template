@@ -1,0 +1,92 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Deep Learning Loss Function System
+
+## Core Components
+
+The loss function system is one of the core components of the framework, allowing flexible creation and configuration of various loss functions.
+
+- [base_loss.py](mdc:dl_framework/losses/base_loss.py) defines the base class `BaseLoss` for all loss functions, inheriting from PyTorch's `nn.Module`.
+- [registry.py](mdc:dl_framework/losses/registry.py) implements the `LossRegistry` class for registering and retrieving loss function classes.
+- [losses/__init__.py](mdc:dl_framework/losses/__init__.py) exports the main loss function components.
+
+## Built-in Loss Functions
+
+The framework provides several built-in loss functions:
+
+- [cross_entropy.py](mdc:dl_framework/losses/cross_entropy.py) - Cross entropy loss for classification tasks.
+- [mse_loss.py](mdc:dl_framework/losses/mse_loss.py) - Mean squared error loss for regression tasks.
+- [l1_loss.py](mdc:dl_framework/losses/l1_loss.py) - L1 loss (absolute error) for regression tasks.
+- [combined_loss.py](mdc:dl_framework/losses/combined_loss.py) - Combines multiple loss functions with weights.
+
+## Loss Function Registration System
+
+The loss function registration system is implemented through the `LossRegistry` class, which allows custom loss functions to be registered to the framework so they can be easily called via configuration files. Usage is as follows:
+
+```python
+@LossRegistry.register('custom_loss_name')
+class CustomLoss(BaseLoss):
+    def __init__(self, config):
+        super().__init__(config)
+        # Extract parameters from config
+        self.param1 = config.get('param1', default_value)
+        
+    def forward(self, outputs, targets):
+        # Loss calculation implementation
+        # ...
+        return loss
+```
+
+## Configuration Methods
+
+There are two ways to configure loss functions in the framework:
+
+### 1. In Model Configuration
+
+Loss function can be specified as part of the model:
+
+```yaml
+model:
+  type: "cnn"
+  in_channels: 3
+  num_classes: 10
+  loss:
+    type: "cross_entropy"
+    reduction: "mean"
+    label_smoothing: 0.1
+    weight: 1.0
+```
+
+### 2. In Training Configuration
+
+Loss function can be specified separately from the model:
+
+```yaml
+loss:
+  type: "cross_entropy"
+  reduction: "mean"
+  label_smoothing: 0.1
+  weight: 1.0
+```
+
+## Combining Multiple Loss Functions
+
+For complex tasks requiring multiple loss functions, the framework provides the `CombinedLoss` class:
+
+```yaml
+loss:
+  type: "combined_loss"
+  weight: 1.0
+  losses:
+    - type: "cross_entropy"
+      weight: 1.0
+    - type: "l1"
+      weight: 0.5
+```
+
+## Detailed Documentation
+
+Detailed documentation of the loss function system and guidelines for creating custom loss functions can be found in [docs/losses.md](mdc:docs/losses.md).

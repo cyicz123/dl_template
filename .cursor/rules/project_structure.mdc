@@ -1,0 +1,17 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Project Structure Guide
+
+This project follows a common structure for deep learning projects.
+
+- The main documentation for the project can be found in [README.md](mdc:README.md).
+- Project dependencies are managed by [pyproject.toml](mdc:pyproject.toml) and [uv.lock](mdc:uv.lock).
+- Configuration files are stored in the [configs/](mdc:configs) directory.
+- The core deep learning framework code is likely located in the [dl_framework/](mdc:dl_framework) directory.
+- Utility scripts and tools can be found in the [tools/](mdc:tools) directory.
+- Experiments, including scripts and results, are stored in the [experiments/](mdc:experiments) directory.
+- Data used for training and evaluation is stored in the [data/](mdc:data) directory.
+- Detailed documentation and guides are available in the [docs/](mdc:docs) directory.

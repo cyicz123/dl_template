@@ -1,0 +1,87 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Deep Learning Hook System
+
+## Core Components
+
+The hook system is a powerful and flexible feature in our framework that allows injecting custom behaviors at different stages of the training process without modifying the core training code.
+
+- [base_hook.py](mdc:dl_framework/hooks/base_hook.py) defines the base class `BaseHook` that all hooks should inherit from.
+- [registry.py](mdc:dl_framework/hooks/registry.py) implements the `HookRegistry` class for registering and retrieving hook classes.
+- [hooks/__init__.py](mdc:dl_framework/hooks/__init__.py) exports the main hook components.
+
+## Built-in Hooks
+
+The framework provides several built-in hooks:
+
+- [feature_map_hook.py](mdc:dl_framework/hooks/feature_map_hook.py) - Visualizes feature maps from CNN models.
+- [grad_flow.py](mdc:dl_framework/hooks/grad_flow.py) - Tracks and visualizes gradient flow.
+- [time_tracking_hook.py](mdc:dl_framework/hooks/time_tracking_hook.py) - Tracks training time and predicts completion time.
+- [system_monitor_hook.py](mdc:dl_framework/hooks/system_monitor_hook.py) - Monitors CPU, memory, and GPU resource usage.
+
+## Hook Registration System
+
+The hook registration system is implemented through the `HookRegistry` class, which allows custom hooks to be registered to the framework so they can be easily called via configuration files. Usage is as follows:
+
+```python
+@HookRegistry.register('custom_hook_name')
+class CustomHook(BaseHook):
+    def __init__(self, config):
+        super().__init__(config)
+        # Hook initialization
+    
+    def before_training(self, model):
+        # Logic to execute before training
+        pass
+        
+    def after_epoch(self, epoch, model, metrics):
+        # Logic to execute after each epoch
+        pass
+        
+    # Other hook methods...
+```
+
+## Hook Points
+
+The framework provides the following hook points:
+
+- `before_training`: Called before training starts
+- `before_epoch`: Called before each epoch starts
+- `before_step`: Called before each step (batch) starts
+- `after_step`: Called after each step completes
+- `after_epoch`: Called after each epoch completes
+- `after_training`: Called after training completes
+- `cleanup`: Used for resource cleanup
+
+## Configuration File Usage
+
+Hooks can be configured in the training configuration file:
+
+```yaml
+hooks:
+  - type: "TimeTrackingHook"
+    name: "training_timer"
+    frequency: 1  # Trigger every epoch
+    log_to_file: true
+    log_path: "time_tracking.log"
+    
+  - type: "SystemMonitorHook"
+    name: "system_monitor"
+    frequency: 10  # Record system resource usage every 10 steps
+    interval: 2  # Sampling interval (seconds)
+    track_cpu: true
+    track_memory: true
+    track_gpu: true
+    track_gpu_memory: true
+```
+
+## Service Injection
+
+Hooks can access various "services" provided by the Trainer through dependency injection. Available services include `trainer`, `config`, `model`, `logger`, and more.
+
+## Detailed Documentation
+
+Detailed documentation of the hook system and usage guidelines can be found in [docs/hooks_usage.md](mdc:docs/hooks_usage.md).

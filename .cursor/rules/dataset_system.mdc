@@ -1,0 +1,76 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Deep Learning Dataset System
+
+## Core Components
+
+The dataset system is one of the core components of the framework, allowing flexible creation and usage of custom datasets without modifying the core training code.
+
+- [base_dataset.py](mdc:dl_framework/datasets/base_dataset.py) defines the base class `BaseDataset` for all datasets, inheriting from PyTorch's `Dataset`.
+- [registry.py](mdc:dl_framework/datasets/registry.py) implements the `DatasetRegistry` class for registering and retrieving dataset classes.
+- [cifar10.py](mdc:dl_framework/datasets/cifar10.py) contains the built-in CIFAR-10 dataset implementation.
+- [datasets/__init__.py](mdc:dl_framework/datasets/__init__.py) exports the main dataset components.
+
+## Dataset Registration System
+
+The dataset registration system is implemented through the `DatasetRegistry` class, which allows custom dataset classes to be registered to the framework so they can be easily called via configuration files. Usage is as follows:
+
+```python
+@DatasetRegistry.register('custom_dataset_name')
+class CustomDataset(BaseDataset):
+    def __init__(self, config, is_training=True):
+        super().__init__(config, is_training)
+        self.transform = self._get_transforms()
+        self._load_data()
+    
+    def _get_transforms(self):
+        # Implement transformation logic
+        return transforms
+        
+    def _load_data(self):
+        # Implement data loading logic
+        pass
+        
+    def __len__(self):
+        # Return dataset size
+        return len(self.data)
+        
+    def __getitem__(self, idx):
+        # Return data item at index
+        return item
+```
+
+## Configuration File Usage
+
+Dataset configuration files can be found in the [configs/datasets/](mdc:configs/datasets) directory, typically following this format:
+
+```yaml
+dataset:
+  type: "registered_dataset_name"  # Registered dataset name
+  data_dir: "data/dataset_folder"
+  batch_size: 32
+  num_workers: 4
+  transforms:
+    resize: [224, 224]
+    normalize:
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+```
+
+## Data Transformations
+
+The framework supports various data transformations that can be specified in the configuration:
+
+- `resize`: Resize images to a specific size
+- `normalize`: Normalize images with given mean and standard deviation
+
+For training sets, the following data augmentations are typically added automatically:
+- `RandomHorizontalFlip`: Random horizontal flipping
+- `RandomAffine`: Random affine transformations
+
+## Detailed Documentation
+
+Detailed documentation of the dataset system and custom dataset guidelines can be found in [docs/custom_dataset.md](mdc:docs/custom_dataset.md).

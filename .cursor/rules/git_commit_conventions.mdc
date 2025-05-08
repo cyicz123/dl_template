@@ -1,0 +1,66 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Git Commit Conventions
+
+## Overview
+
+This project follows the [Conventional Commits](mdc:https:/www.conventionalcommits.org) specification with some customizations. Most importantly, **commit messages should be written in Chinese** to maintain consistency across the project.
+
+## Commit Message Format
+
+```
+<type>[optional scope]: <description in Chinese> #Issue number
+
+[optional body in Chinese]
+
+[optional footer]
+```
+
+## Commit Types
+
+- **feat**: A new feature
+- **fix**: A bug fix
+- **docs**: Documentation changes
+- **style**: Code style changes (formatting, missing semicolons, etc) that don't affect the meaning of the code
+- **refactor**: Code changes that neither fix a bug nor add a feature
+- **perf**: Performance improvements
+- **test**: Adding or correcting tests
+- **chore**: Changes to the build process or auxiliary tools
+
+## Guidelines
+
+1. The commit message **must be written in Chinese**
+2. The type and scope **must be in English**
+3. Always include the related issue number with format `#123`
+4. Keep the description concise and clear (less than 50 characters)
+5. Use imperative mood in the description
+6. When needed, provide more details in the body
+
+## Examples
+
+```
+feat(user): 添加用户登录功能 #123
+
+实现了基于JWT的认证系统和用户登录表单。
+
+Closes #123
+```
+
+```
+fix(api): 修复用户数据获取错误 #456
+
+修复了当用户未登录时API返回500错误的问题，现在会正确返回401状态码。
+```
+
+```
+docs: 更新README文件 #789
+
+添加了项目安装和使用说明。
+```
+
+## Working with Branches
+
+For guidance on branch naming and the complete development workflow, please refer to [github-team-workflow.md](mdc:docs/github-team-workflow.md).

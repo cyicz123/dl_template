@@ -13,6 +13,7 @@ device: "cuda"
 
 training:
   epochs: 50
+  val_interval: 5  # 验证频率：每N个epoch验证一次，默认为1（每个epoch都验证）
   overfit_on_small_subset: 
     enable: false
     small_subset_size: 100

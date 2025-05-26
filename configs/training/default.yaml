@@ -43,7 +43,7 @@ training:
     monitor: "loss"
     mode: "min"
   checkpoint:
-    save_frequency: 5  # 每5个epoch保存一次权重
+    save_frequency: 3  # 每3个epoch保存一次权重
     # keep_num: 3  # 保留最近的3个checkpoint
 
 # 钩子配置示例
@@ -71,3 +71,22 @@ hooks:
     track_memory: true  # 是否监控内存使用率
     track_gpu: true  # 是否监控GPU使用率
     track_gpu_memory: true  # 是否监控GPU内存使用率
+
+# 评估配置 - 针对CIFAR10数据集
+evaluation:
+  val_evaluator:
+    - type: Accuracy
+      top_k: [1, 5]  # 计算top-1和top-5准确率
+      prefix: "acc"
+    - type: Precision
+      average: "macro"  # 宏平均，适合多分类任务
+      prefix: "precision"
+    - type: Recall
+      average: "macro"  # 宏平均，适合多分类任务
+      prefix: "recall"
+    - type: F1Score
+      average: "macro"  # 宏平均，适合多分类任务
+      prefix: "f1"
+    - type: ConfusionMatrix
+      num_classes: 10  # CIFAR10有10个类别
+      prefix: "cm"

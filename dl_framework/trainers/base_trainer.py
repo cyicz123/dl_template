@@ -13,9 +13,9 @@ import logging
 from ..utils.checkpoint import save_checkpoint, load_checkpoint
 from ..visualization.base_visualizer import BaseVisualizer
 from ..hooks.base_hook import BaseHook
-from ..hooks.registry import HookRegistry
 from ..visualization.registry import VisualizerRegistry
 from ..schedulers import build_scheduler, BaseLRSchedulerWrapper
+from ..evaluation import Evaluator
 
 class BaseTrainer:
     """基础训练器类"""
@@ -71,6 +71,9 @@ class BaseTrainer:
         # 构建钩子
         self.hooks = [] 
         self._build_hooks()
+
+        # 构建评估器
+        self.evaluator = self._build_evaluator()
         
         # 训练状态
         self.current_epoch = 0
@@ -135,6 +138,10 @@ class BaseTrainer:
         # 注册损失函数（如果存在）
         if hasattr(self, 'loss') and self.loss is not None:
             self.register_service("loss", self.loss)
+
+        # 注册评估器（如果存在）
+        if hasattr(self, 'evaluator') and self.evaluator is not None:
+            self.register_service("evaluator", self.evaluator)
     
     def register_service(self, service_name: str, service: Any) -> None:
         """注册服务
@@ -468,6 +475,24 @@ class BaseTrainer:
         self.logger.info(f"从配置构建损失函数: {loss_config.get('type')}")
         return LossRegistry.create(loss_config)
     
+    def _build_evaluator(self) -> Optional[Evaluator]:
+        """构建评估器
+        
+        Returns:
+            评估器实例或None
+        """
+        eval_config = self.config.get('evaluation')
+        if not eval_config:
+            return None
+            
+        # 可以配置验证和测试不同的评估器
+        val_metrics = eval_config.get('val_evaluator', eval_config.get('metrics'))
+        if not val_metrics:
+            return None
+            
+        self.logger.info(f"构建评估器: {val_metrics}")
+        return Evaluator(val_metrics)
+    
     def train(self) -> nn.Module:
         """训练模型
         
@@ -644,6 +669,10 @@ class BaseTrainer:
         total_loss = 0
         num_batches = len(self.val_loader)
         
+        # 重置评估器
+        if self.evaluator:
+            self.evaluator.reset()
+        
         with torch.no_grad():
             for batch_idx, batch in enumerate(self.val_loader):
                 # 准备数据
@@ -671,20 +700,25 @@ class BaseTrainer:
                 
                 # 累积损失
                 total_loss += loss.item()
+
+                # 使用评估器处理数据
+                if self.evaluator:
+                    # 直接传递整个batch的预测和目标
+                    self.evaluator.process(outputs, targets)
         
         # 计算平均损失
         avg_loss = total_loss / num_batches
-        
-        # 计算其他指标（子类可以重写此方法添加更多指标）
         metrics = {'loss': avg_loss}
+        
+        # 计算评估器指标
+        if self.evaluator:
+            eval_metrics = self.evaluator.evaluate(len(self.val_loader.dataset))
+            metrics.update(eval_metrics)
         
         # 使用可视化器记录验证指标
         if self.visualizer is not None:
-            self.visualizer.add_scalar('val/loss', avg_loss, self.current_epoch)
-            # 如果有其他指标，也记录它们
             for key, value in metrics.items():
-                if key != 'loss':  # loss已经记录过了
-                    self.visualizer.add_scalar(f'val/{key}', value, self.current_epoch)
+                self.visualizer.add_scalar(f'val/{key}', value, self.current_epoch)
         
         return metrics
     
@@ -877,9 +911,19 @@ class BaseTrainer:
         if test_loader is None:
             test_loader = self.val_loader
         
+        # 可以为测试使用不同的评估器
+        test_evaluator = self.evaluator
+        test_eval_config = self.config.get('evaluation', {}).get('test_evaluator')
+        if test_eval_config:
+            test_evaluator = Evaluator(test_eval_config)
+        
         self.model.eval()
         total_loss = 0
         num_batches = len(test_loader)
+        
+        # 重置评估器
+        if test_evaluator:
+            test_evaluator.reset()
         
         with torch.no_grad():
             for batch_idx, batch in enumerate(test_loader):
@@ -911,13 +955,20 @@ class BaseTrainer:
                 
                 # 累积损失
                 total_loss += loss.item()
+                
+                # 使用评估器处理数据
+                if test_evaluator:
+                    # 直接传递整个batch的预测和目标
+                    test_evaluator.process(outputs, targets)
         
         # 计算平均损失
         avg_loss = total_loss / num_batches
-        
-        # 计算其他指标（子类可以重写此方法添加更多指标）
         metrics = {'loss': avg_loss}
         
-        self.logger.info(f"测试结果: {metrics}")
+        # 计算评估器指标
+        if test_evaluator:
+            eval_metrics = test_evaluator.evaluate(len(test_loader.dataset))
+            metrics.update(eval_metrics)
         
+        self.logger.info(f"测试结果: {metrics}")
         return metrics 

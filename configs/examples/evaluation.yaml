@@ -1,0 +1,93 @@
+# 评估配置示例
+
+# 基础配置 - 单个指标
+evaluation_basic:
+  val_evaluator:
+    type: Accuracy
+    top_k: [1, 5]  # 计算top-1和top-5准确率
+    prefix: "acc"
+
+# 多指标配置
+evaluation_multi:
+  val_evaluator:
+    - type: Accuracy
+      top_k: [1, 5]
+      prefix: "acc"
+    - type: Precision
+      average: "macro"
+      prefix: "precision"
+    - type: Recall
+      average: "macro"
+      prefix: "recall"
+    - type: F1Score
+      average: "macro"
+      prefix: "f1"
+
+# 分类任务完整评估配置
+classification_evaluation:
+  val_evaluator:
+    - type: Accuracy
+      top_k: [1, 3, 5]
+    - type: Precision
+      average: "macro"
+    - type: Recall
+      average: "macro"
+    - type: F1Score
+      average: "macro"
+    - type: ConfusionMatrix
+      num_classes: 10
+
+# 回归任务评估配置
+regression_evaluation:
+  val_evaluator:
+    - type: MSE
+    - type: MAE
+    - type: RMSE
+    - type: R2Score
+
+# 验证和测试使用不同指标
+different_eval:
+  val_evaluator:
+    type: Accuracy
+    top_k: 1
+  test_evaluator:
+    - type: Accuracy
+      top_k: [1, 5]
+    - type: Precision
+      average: "macro"
+    - type: Recall
+      average: "macro"
+    - type: F1Score
+      average: "macro"
+
+# 完整的训练配置示例
+complete_training_config:
+  model:
+    model:
+      type: SimpleCNN
+      num_classes: 10
+      
+  dataset:
+    dataset:
+      type: CIFAR10
+      root: ./data/cifar10
+      
+  training:
+    epochs: 100
+    optimizer:
+      type: adam
+      lr: 0.001
+      
+  # 评估配置
+  evaluation:
+    val_evaluator:
+      - type: Accuracy
+        top_k: [1, 5]
+        prefix: "acc"
+      - type: F1Score
+        average: "weighted"
+        prefix: "f1"
+        
+  visualization:
+    tensorboard:
+      log_dir: "./logs" 

@@ -13,6 +13,9 @@ device: "cuda"
 
 training:
   epochs: 50
+  overfit_on_small_subset: 
+    enable: false
+    small_subset_size: 100
   optimizer:
     type: "adamw"
     lr: 0.001

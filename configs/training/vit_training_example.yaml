@@ -17,7 +17,7 @@ training:
   device: "cuda"
   optimizer:
     type: "adam"
-    lr: 0.000001
+    lr: 1e-6
     weight_decay: 1.0e-5
     # beta1: 0.9
     # beta2: 0.999
@@ -39,3 +39,18 @@ hooks:
   - type: "TimeTrackingHook"
     name: "training_timer"
     frequency: 1  # 每个epoch都要触发
+
+evaluation:
+  val_evaluator:
+    - type: Accuracy
+      top_k: [1, 5]  # 计算top-1和top-5准确率
+      prefix: "acc"
+    - type: Precision
+      average: "macro"  # 宏平均，适合多分类任务
+      prefix: "precision"
+    - type: Recall
+      average: "macro"  # 宏平均，适合多分类任务
+      prefix: "recall"
+    - type: F1Score
+      average: "macro"  # 宏平均，适合多分类任务
+      prefix: "f1"

@@ -1,0 +1,14 @@
+model:
+  type: "image_vit"
+  model_name: "vit_base_patch16_224"  # ViT模型名称
+  pretrained: true                    # 使用预训练权重
+  in_chans: 3                         # 图像数据通常是三通道RGB
+  img_size: [224, 224]                # 标准图像尺寸
+  num_classes: 2                     # 分类任务的类别数，设为0表示只提取特征
+  return_features: false              # 设为true返回特征，false返回分类结果
+  dropout_rate: 0.1                   # Dropout率
+  loss:
+    type: "cross_entropy"             # 分类任务使用交叉熵损失
+    reduction: "mean"
+    label_smoothing: 0.1
+    weight: 1.0

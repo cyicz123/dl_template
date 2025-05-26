@@ -1,0 +1,41 @@
+# Vision Transformer 训练示例配置
+experiment_name: "plate_vit"  # 实验名称
+model_config: "configs/models/image_vit.yaml"  # 模型配置 
+dataset_config: "configs/datasets/plate.yaml"  # 数据集配置
+
+# 训练配置
+training:
+  type: "base_trainer"
+  epochs: 40
+  eval_frequency: 1                  # 多少个epoch评估一次
+  save_frequency: 5                  # 多少个epoch保存一次
+  early_stopping_patience: 10        # 早停耐心值
+  gradient_accumulation_steps: 1     # 梯度累积步数
+  precision: "fp32"                  # 精度："fp32" 或 "fp16"
+  clip_grad_norm: 1.0                # 梯度裁剪
+  seed: 42                           # 随机种子，确保可重复性
+  device: "cuda"
+  optimizer:
+    type: "adam"
+    lr: 0.000001
+    weight_decay: 1.0e-5
+    # beta1: 0.9
+    # beta2: 0.999
+  dataloader:
+    batch_size: 32
+    num_workers: 4
+    # shuffle: true
+    # pin_memory: true
+    # drop_last: false
+  checkpoint:
+    save_frequency: 5  # 每5个epoch保存一次权重
+  # 可视化配置
+  visualizer:
+    type: "tensorboard"
+    log_dir: "visualization"
+
+# 钩子配置
+hooks:
+  - type: "TimeTrackingHook"
+    name: "training_timer"
+    frequency: 1  # 每个epoch都要触发

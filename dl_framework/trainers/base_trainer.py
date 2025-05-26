@@ -2,7 +2,7 @@ import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 from typing import Dict, Any, List, Tuple, Callable, Optional, Union
 
 from ..models.registry import ModelRegistry
@@ -240,10 +240,37 @@ class BaseTrainer:
             
         dataset_class = DatasetRegistry.get(dataset_type)
         
+        # 获取过拟合测试模式的配置
+        training_config = self.config.get('training', {})
+        subset_config = training_config.get('overfit_on_small_subset')
+        subset_enable = subset_config.get('enable', False)
+        subset_size = subset_config.get('small_subset_size', 100)
+
         # 创建训练和验证数据集
-        train_dataset = dataset_class(dataset_config, is_training=True)
+        train_dataset_original = dataset_class(dataset_config, is_training=True)
         val_dataset = dataset_class(dataset_config, is_training=False)
         
+        # 获取 collate_fn 函数（在包装成 Subset 前）
+        train_collate_fn = train_dataset_original.get_collate_fn()
+        val_collate_fn = val_dataset.get_collate_fn()
+        
+        # 如果启用了过拟合测试模式，并且是训练数据集，则创建子集
+        if subset_enable:
+            if subset_size < len(train_dataset_original):
+                # 使用配置中的种子生成随机索引
+                generator = torch.Generator()
+                generator.manual_seed(self.config.get('seed', 42))
+                indices = torch.randperm(len(train_dataset_original), generator=generator)[:subset_size].tolist()
+                train_dataset = Subset(train_dataset_original, indices)
+                self.logger.info(f"Training on a subset of size {len(train_dataset)} for overfitting test (original size: {len(train_dataset_original)}).")
+            else:
+                train_dataset = train_dataset_original # 如果请求的子集大小不小于原始大小，则使用原始数据集
+                self.logger.info(f"Requested small_subset_size ({subset_size}) is >= original dataset size ({len(train_dataset_original)}). Using full training dataset.")
+
+            val_dataset = train_dataset # 验证集和训练集使用相同的子集
+        else:
+            train_dataset = train_dataset_original # 默认使用原始训练数据集
+
         # 配置数据加载器
         batch_size = dataset_config.get('batch_size', 32)
         num_workers = dataset_config.get('num_workers', 4)
@@ -254,7 +281,7 @@ class BaseTrainer:
             shuffle=True,
             num_workers=num_workers,
             pin_memory=True,
-            collate_fn=train_dataset.get_collate_fn(),
+            collate_fn=train_collate_fn,  # 使用原始数据集的 collate_fn
         )
         
         val_loader = DataLoader(
@@ -263,7 +290,7 @@ class BaseTrainer:
             shuffle=False,
             num_workers=num_workers,
             pin_memory=True,
-            collate_fn=val_dataset.get_collate_fn(),
+            collate_fn=val_collate_fn,
         )
         
         return train_loader, val_loader

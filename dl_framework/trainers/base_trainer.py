@@ -509,6 +509,9 @@ class BaseTrainer:
         for hook in self.hooks:
             hook.before_training(self.model)
         
+        # 获取验证频率配置，默认为1（每个epoch都验证）
+        val_interval = training_config.get('val_interval', 1)
+        
         # 迭代每个epoch
         for epoch in range(self.current_epoch, epochs):
             self.current_epoch = epoch
@@ -520,40 +523,63 @@ class BaseTrainer:
             # 训练一个epoch
             train_metrics = self._train_epoch()
             
-            # 验证
-            val_metrics = self._validate_epoch()
+            # 根据验证频率决定是否验证
+            should_validate = (epoch + 1) % val_interval == 0 or (epoch + 1) == epochs
+            
+            if should_validate:
+                # 验证
+                val_metrics = self._validate_epoch()
+            else:
+                # 如果不验证，使用空的指标字典
+                val_metrics = {}
             
             # 更新学习率调度器
             if self.scheduler is not None:
                 if isinstance(self.scheduler, BaseLRSchedulerWrapper):
                     # 新的调度器系统 - 使用包装器的统一接口
-                    self.scheduler.step(metrics=val_metrics, epoch=self.current_epoch)
+                    # 对于需要验证指标的调度器，只在有验证时更新
+                    if should_validate or not hasattr(self.scheduler.scheduler, 'patience'):
+                        self.scheduler.step(metrics=val_metrics, epoch=self.current_epoch)
                 else:
                     # 旧的调度器系统 - 保持原有逻辑以保证兼容性
                     if isinstance(self.scheduler, optim.lr_scheduler.ReduceLROnPlateau):
-                        self.scheduler.step(val_metrics.get('loss', float('inf')))
+                        # ReduceLROnPlateau需要验证指标，只在有验证时更新
+                        if should_validate:
+                            self.scheduler.step(val_metrics.get('loss', float('inf')))
                     else:
                         self.scheduler.step()
             
             # 记录指标
-            self.logger.info(
-                f"Epoch [{epoch+1}/{epochs}] "
-                f"Train Loss: {train_metrics.get('loss', 0):.4f} "
-                f"Val Loss: {val_metrics.get('loss', 0):.4f} "
-                f"Val Metrics: {val_metrics}"
-            )
+            if should_validate:
+                self.logger.info(
+                    f"Epoch [{epoch+1}/{epochs}] "
+                    f"Train Loss: {train_metrics.get('loss', 0):.4f} "
+                    f"Val Loss: {val_metrics.get('loss', 0):.4f} "
+                    f"Val Metrics: {val_metrics}"
+                )
+            else:
+                self.logger.info(
+                    f"Epoch [{epoch+1}/{epochs}] "
+                    f"Train Loss: {train_metrics.get('loss', 0):.4f} "
+                    f"(验证跳过，下次验证在epoch {((epoch + 1) // val_interval + 1) * val_interval})"
+                )
             
             # 执行钩子的epoch后方法
             for hook in self.hooks:
                 hook.after_epoch(epoch, self.model, val_metrics)
             
-            # 保存检查点
-            self._save_checkpoint(val_metrics)
-            
-            # 检查早停
-            if self._should_stop_early(val_metrics):
-                self.logger.info(f"早停触发，在epoch {epoch+1}停止训练")
-                break
+            # 检查点保存逻辑
+            if should_validate:
+                # 保存检查点（包括最佳模型检查）
+                self._save_checkpoint(val_metrics)
+                
+                # 检查早停
+                if self._should_stop_early(val_metrics):
+                    self.logger.info(f"早停触发，在epoch {epoch+1}停止训练")
+                    break
+            else:
+                # 即使没有验证，也可能需要根据周期性频率保存检查点
+                self._save_checkpoint_periodic_only()
         
         # 执行钩子的训练后方法
         for hook in self.hooks:
@@ -810,6 +836,59 @@ class BaseTrainer:
                 )
                 self.best_metric = metrics['loss']
                 self.logger.info(f"保存最佳模型，验证损失: {metrics['loss']:.4f}")
+    
+    def _save_checkpoint_periodic_only(self) -> None:
+        """仅进行周期性检查点保存（不包括最佳模型保存）
+        
+        用于在没有验证时也能定期保存模型
+        """
+        # 获取checkpoint配置
+        checkpoint_config = self.config.get('training', {}).get('checkpoint', {})
+        save_frequency = checkpoint_config.get('save_frequency', None)
+        
+        # 如果没有配置保存频率，则不保存
+        if save_frequency is None:
+            return
+            
+        # 只有当前epoch符合保存频率时才保存
+        if (self.current_epoch + 1) % save_frequency == 0:
+            keep_num = checkpoint_config.get('keep_num', None)
+            
+            # 保存周期性检查点
+            epoch_checkpoint_path = os.path.join(
+                self.checkpoints_dir, f'model_epoch_{self.current_epoch + 1}.pth'
+            )
+            
+            # 保存检查点（不包含验证指标）
+            save_checkpoint(
+                self.model,
+                epoch_checkpoint_path,
+                optimizer=self.optimizer,
+                scheduler=self.scheduler,
+                epoch=self.current_epoch,
+                metrics={}  # 空的指标字典
+            )
+            self.logger.info(f"在epoch {self.current_epoch + 1}保存周期性检查点（无验证）")
+            
+            # 更新最新检查点
+            latest_checkpoint_path = os.path.join(self.checkpoints_dir, 'model_latest.pth')
+            try:
+                if os.path.exists(latest_checkpoint_path):
+                    os.remove(latest_checkpoint_path)
+                os.link(epoch_checkpoint_path, latest_checkpoint_path)
+            except OSError:
+                save_checkpoint(
+                    self.model,
+                    latest_checkpoint_path,
+                    optimizer=self.optimizer,
+                    scheduler=self.scheduler,
+                    epoch=self.current_epoch,
+                    metrics={}
+                )
+            
+            # 清理旧检查点
+            if keep_num is not None:
+                self._cleanup_old_checkpoints(keep_num)
     
     def _cleanup_old_checkpoints(self, keep_num: int) -> None:
         """清理旧的检查点文件，只保留最新的几个

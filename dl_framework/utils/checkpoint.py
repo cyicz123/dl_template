@@ -49,7 +49,8 @@ def load_checkpoint(
     path: str,
     device: Union[str, torch.device],
     optimizer: Optional[optim.Optimizer] = None,
-    scheduler: Optional[Any] = None
+    scheduler: Optional[Any] = None,
+    strict: bool = True
 ) -> Dict[str, Any]:
     """加载模型检查点
     
@@ -68,9 +69,9 @@ def load_checkpoint(
     
     # 加载模型参数
     if 'model' in checkpoint:
-        model.load_state_dict(checkpoint['model'])
+        model.load_state_dict(checkpoint['model'], strict=strict)
     else:
-        model.load_state_dict(checkpoint)
+        model.load_state_dict(checkpoint, strict=strict)
     
     # 加载优化器参数
     if optimizer is not None and 'optimizer' in checkpoint:

@@ -249,7 +249,7 @@ class BaseTrainer:
         
         # 获取过拟合测试模式的配置
         training_config = self.config.get('training', {})
-        subset_config = training_config.get('overfit_on_small_subset')
+        subset_config = training_config.get('overfit_on_small_subset', {})
         subset_enable = subset_config.get('enable', False)
         subset_size = subset_config.get('small_subset_size', 100)
 

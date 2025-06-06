@@ -4,6 +4,7 @@ from .cnn import CNN
 from .vgg16 import VGG16
 from .densenet import DenseNet
 from .vit_models import ImageViT
+from .googlenet import GoogleNet
 
 __all__ = [
     'BaseModel',
@@ -12,4 +13,5 @@ __all__ = [
     'VGG16',
     'DenseNet',
     'ImageViT',
+    'GoogleNet',
 ]

@@ -2,4 +2,4 @@ model:
   type: "vgg16"
   num_classes: 2  # 猫狗二分类
   use_pretrained: true  # 使用预训练权重
-  feature_extract: true  # 分类器微调
+  feature_extract: false  # 分类器微调

@@ -1,0 +1,14 @@
+# GoogleNet 模型配置文件
+model:
+  type: "googlenet"
+  
+  # 基本参数
+  num_classes: 2           # 分类数量，ImageNet 为 1000
+  in_channels: 3           # 输入通道数，RGB 图像为 3
+  aux_logits: true         # 是否使用辅助分类器（训练时推荐开启）
+  dropout: 0.2             # Dropout 概率
+  freeze_backbone: false    # 是否冻结主干网络
+  
+  # 预训练权重配置
+  pretrained: true        # 是否使用预训练权重
+  weights: "DEFAULT"       # 预训练权重类型: "DEFAULT", "IMAGENET1K_V1"

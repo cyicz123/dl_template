@@ -1,0 +1,50 @@
+# Vision Transformer 训练示例配置
+experiment_name: "plate_vgg16"  # 实验名称
+model_config: "configs/models/vgg16_cat_dog.yaml"  # 模型配置 
+dataset_config: "configs/datasets/plate.yaml"  # 数据集配置
+
+# 训练配置
+training:
+  epochs: 50
+  val_interval: 1  # 验证频率：每N个epoch验证一次，默认为1（每个epoch都验证）
+  overfit_on_small_subset: 
+    enable: false
+    small_subset_size: 100
+  optimizer:
+    type: "adamw"
+    lr: 1e-5
+    weight_decay: 1e-5
+  scheduler:
+    type: CompositeLR
+    step_frequency: epoch
+    phases:
+      # 预热阶段
+      - scheduler_name: LinearWarmup
+        config:
+          warmup_epochs: 5
+          warmup_start_factor: 0.01
+        duration: 5
+      
+  # checkpoint:
+  #   save_frequency: 5  # 每5个epoch保存一次权重
+
+# 钩子配置
+hooks:
+  - type: "TimeTrackingHook"
+    name: "training_timer"
+    frequency: 1  # 每个epoch都要触发
+
+evaluation:
+  val_evaluator:
+    - type: Accuracy
+      top_k: [1]  # 计算top-1准确率
+      prefix: "acc"
+    - type: Precision
+      average: "binary"  # 宏平均，适合多分类任务
+      prefix: "precision"
+    - type: Recall
+      average: "binary"  # 宏平均，适合多分类任务
+      prefix: "recall"
+    - type: F1Score
+      average: "binary"  # 宏平均，适合多分类任务
+      prefix: "f1"

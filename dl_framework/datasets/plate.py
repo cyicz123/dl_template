@@ -6,6 +6,7 @@ from typing import Dict, Any, Tuple, Optional, List
 
 from .base_dataset import BaseDataset
 from .registry import DatasetRegistry
+from ..utils.logger import get_logger
 
 @DatasetRegistry.register('plate')
 class PlateDataset(BaseDataset):
@@ -19,6 +20,7 @@ class PlateDataset(BaseDataset):
             is_training: 是否为训练集
         """
         super().__init__(config, is_training)
+        self.logger = get_logger(__name__)
         self.transform = self._get_transforms()
         self._load_data()
         
@@ -64,7 +66,7 @@ class PlateDataset(BaseDataset):
     def _load_data(self) -> None:
         """加载数据"""
         # 获取盘子数据的根目录
-        plate_dir = os.path.join(self.data_dir, 'plate')
+        plate_dir = os.path.join(self.data_dir, self.config.get('data_name', 'plate'))
         
         if not os.path.exists(plate_dir):
             raise FileNotFoundError(f"盘子数据集目录不存在: {plate_dir}")
@@ -120,7 +122,7 @@ class PlateDataset(BaseDataset):
             raise ValueError(f"没有找到{mode}数据。请确保数据目录结构正确。")
         
         # 打印数据集信息
-        print(f"{'训练' if self.is_training else '测试'}集加载完成: "
+        self.logger.info(f"{'训练' if self.is_training else '测试'}集加载完成: "
               f"总共 {len(self.image_paths)} 张图片, "
               f"干净盘子: {self.labels.count(0)}, "
               f"脏盘子: {self.labels.count(1)}")
@@ -147,7 +149,7 @@ class PlateDataset(BaseDataset):
         try:
             image = Image.open(img_path).convert('RGB')
         except Exception as e:
-            print(f"加载图像 {img_path} 时出错: {e}")
+            self.logger.error(f"加载图像 {img_path} 时出错: {e}")
             # 如果出错，返回数据集中的另一个图像
             return self.__getitem__((idx + 1) % len(self))
         

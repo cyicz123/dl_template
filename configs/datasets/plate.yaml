@@ -1,5 +1,6 @@
 dataset:
   type: "plate"
+  data_name: "plate(3)"
   data_dir: "data"
   batch_size: 32
   num_workers: 4

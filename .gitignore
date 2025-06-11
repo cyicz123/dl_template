@@ -12,5 +12,6 @@ wheels/
 
 # 实验结果
 experiments/
+test_results/
 # 数据集
 data

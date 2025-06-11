@@ -1,11 +1,12 @@
 dataset:
   type: "plate"
-  data_name: "plate(3)"
+  data_name: "plate"
   data_dir: "data"
   batch_size: 32
   num_workers: 4
   shuffle: true
-  train_ratio: 0.8  # 训练集占总数据的比例
+  use_split_folders: true
+  train_ratio: 0.8  # 训练集占总数据的比例, 当use_split_folders: true时，train_ratio无效
   transforms:
     resize: [224, 224]  # 调整图像大小为224x224
     center_crop: 224    # 可选的中心裁剪

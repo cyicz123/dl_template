@@ -25,8 +25,8 @@ training:
           warmup_start_factor: 0.01
         duration: 5
       
-  # checkpoint:
-  #   save_frequency: 5  # 每5个epoch保存一次权重
+  checkpoint:
+    save_frequency: 5  # 每5个epoch保存一次权重
 
 # 钩子配置
 hooks:
